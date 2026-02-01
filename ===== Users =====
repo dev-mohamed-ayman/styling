@@ -1,0 +1,55 @@
+===== Users =====
+- name
+- email
+- phone
+- password
+- image
+- login_from
+- social_token
+- otp
+- otp_verified_at
+- otp_expiered_at
+- gender ( male - female )
+- height
+- weight
+- skin_tones ( light - fair - mediam - tan - dark )
+- body_shape ( hourglass - pear - apple - rectangle - inverted_triangle )
+- body_measurements ( shoulder - chest - waist - arm - hip - thigh - leg )
+
+===== Fashion Styles =====
+- name
+- image
+
+===== User Fashion Style =====
+- user_id
+- fashion_id
+
+===== Banners =====
+- image
+- link
+
+===== Stylist =====
+- name
+- image
+- cover
+- bio
+- avg_rating
+- about
+- pric
+
+===== Srylist Featuers =====
+- stylist_id
+- icon
+- title
+
+===== Srylist Images =====
+- stylist_id
+- path
+
+===== Srylist Services =====
+- stylist_id
+- title
+- avilable
+- price
+
+===== =====
