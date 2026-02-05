@@ -59,6 +59,7 @@ class AuthController extends Controller
     {
         $user = $request->user();
         $data = $request->validated();
+        unset($data['fashion_styles']);
         if ($request->image) {
             $data['image'] = FileHelper::upload($request->file('image'), 'users', $user->getRawOriginal('image'));
         }
@@ -66,6 +67,10 @@ class AuthController extends Controller
             $data['password'] = Hash::make($data['password']);
         }
         $user->update($data);
+
+        if ($request->fashion_styles)
+            $user->fashionStyles()->sync($request->fashion_styles, false);
+
         return ApiResponse::success($user);
     }
 

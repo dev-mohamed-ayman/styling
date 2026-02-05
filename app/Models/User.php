@@ -55,4 +55,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Address::class);
     }
+
+    public function fashionStyles()
+    {
+        return $this->belongsToMany(FashionStyle::class, 'user_fashion_style');
+    }
 }

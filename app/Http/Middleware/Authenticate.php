@@ -22,14 +22,20 @@ class Authenticate extends MiddlewareAuthenticate
 
     protected function unauthenticated($request, array $guards)
     {
+        if ($request->expectsJson() || $request->is('api/*')) {
+            throw new AuthenticationException('Unauthenticated.', $guards);
+        }
 
         foreach ($guards as $guard) {
             switch ($guard) {
                 case 'admin':
-                    throw new AuthenticationException(redirectTo: route('dashboard.login'));
-                    break;
+                    throw new AuthenticationException(
+                        'Unauthenticated.', $guards, route('dashboard.login')
+                    );
                 default:
-                    throw new AuthenticationException(redirectTo: route('login'));
+                    throw new AuthenticationException(
+                        'Unauthenticated.', $guards, route('login')
+                    );
             }
         }
     }
