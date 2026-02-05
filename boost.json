@@ -1,0 +1,15 @@
+{
+    "agents": [
+        "cursor",
+        "gemini",
+        "phpstorm"
+    ],
+    "editors": [
+        "cursor",
+        "gemini",
+        "phpstorm",
+        "vscode",
+        "vscode"
+    ],
+    "guidelines": []
+}

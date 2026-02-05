@@ -31,7 +31,7 @@ return new class extends Migration {
             $table->enum('skin_tones', ['light', 'fair', 'medium', 'tan', 'dark'])->nullable();
             $table->enum('body_shape', ['hourglass', 'pear', 'apple', 'rectangle', 'inverted_triangle'])->nullable();
 
-            $table->json('body_measurements')->nullable();
+            $table->json('body_measurements')->nullable(); // shoulder - chest - waist - arm - hip - thigh - leg
 
             $table->softDeletes();
             $table->timestamps();

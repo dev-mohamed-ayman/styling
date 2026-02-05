@@ -27,7 +27,21 @@ class UpdateRequest extends FormRequest
             'phone' => 'nullable|string|unique:users,phone,' . $this->user()->id,
             'image' => 'nullable|image|max:2048',
             'password' => 'nullable|string|confirmed|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
-            'city_id' => 'nullable|exists:cities,id',
+            'gender' => 'nullable|string|in:male,female',
+
+            'height' => 'nullable|numeric',
+            'weight' => 'nullable|numeric',
+            'skin_tones' => 'nullable|string|in:light,fair,medium,tan,dark',
+            'body_shape' => 'nullable|string|in:hourglass,pear,apple,rectangle,inverted_triangle',
+
+            'body_measurements' => 'nullable|array',
+            'body_measurements.shoulder' => 'nullable|numeric',
+            'body_measurements.chest'    => 'nullable|numeric',
+            'body_measurements.waist'    => 'nullable|numeric',
+            'body_measurements.arm'      => 'nullable|numeric',
+            'body_measurements.hip'      => 'nullable|numeric',
+            'body_measurements.thigh'    => 'nullable|numeric',
+            'body_measurements.leg'      => 'nullable|numeric',
         ];
     }
 
