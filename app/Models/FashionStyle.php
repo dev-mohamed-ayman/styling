@@ -25,4 +25,9 @@ class FashionStyle extends Model
     {
         return $this->belongsToMany(User::class, '	user_fashion_style');
     }
+
+    public function stylists()
+    {
+        return $this->belongsToMany(Stylist::class, '	stylist_fashion_style');
+    }
 }

@@ -11,4 +11,9 @@ class Stylist extends Model
     {
         return $this->hasMany(StylistReview::class);
     }
+
+    public function fashionStyles()
+    {
+        return $this->belongsToMany(FashionStyle::class, 'stylist_fashion_style');
+    }
 }
