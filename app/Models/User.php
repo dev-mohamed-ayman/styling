@@ -40,7 +40,7 @@ class User extends Authenticatable
         return Attribute::make(
             get: fn($value) => $value
                 ? asset($value)
-                : null
+                : "https://ui-avatars.com/api/?name=" . $this->name
         );
     }
 

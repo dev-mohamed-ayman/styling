@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\BannerController;
+use App\Http\Controllers\Api\FashionStyleController;
 use App\Http\Controllers\Api\StylistController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -12,3 +13,6 @@ Route::get('banners', BannerController::class);
 Route::prefix('stylists')->controller(StylistController::class)->group(function () {
     Route::get('trusted', 'trusted');
 });
+
+// Fashion Styles
+Route::get('fashion-styles', FashionStyleController::class);
