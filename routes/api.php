@@ -11,8 +11,10 @@ Route::get('banners', BannerController::class);
 
 // Stylist Routes
 Route::prefix('stylists')->controller(StylistController::class)->group(function () {
+    Route::get('', 'stylists');
     Route::get('trusted', 'trusted');
     Route::get('recommended-services', 'recommendedServices');
+    Route::get('{stylist_id}', 'stylistDetails');
 });
 
 // Fashion Styles

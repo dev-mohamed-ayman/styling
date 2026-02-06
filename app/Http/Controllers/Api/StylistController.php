@@ -11,6 +11,39 @@ use Illuminate\Http\Request;
 
 class StylistController extends Controller
 {
+
+    public function stylists(Request $request)
+    {
+        $stylists = Stylist::query()
+            ->when($request->search, function ($query) use ($request) {
+                $query->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('bio', 'like', '%' . $request->search . '%')
+                    ->orWhere('about', 'like', '%' . $request->search . '%');
+            })
+            ->latest()
+            ->paginate(perPage($request->per_page));
+
+        $stylists->setCollection(
+            StylistResource::collection($stylists->getCollection())->collection
+        );
+
+
+        return ApiResponse::paginated($stylists);
+    }
+
+    public function stylistDetails($stylist_id)
+    {
+        $stylist = Stylist::query()
+            ->where('id', $stylist_id)
+            ->first();
+
+        if (!$stylist) {
+            return ApiResponse::error(__('stylist_not_found'));
+        }
+
+        return ApiResponse::success($stylist);
+    }
+
     public function trusted()
     {
         $stylists = Stylist::query()

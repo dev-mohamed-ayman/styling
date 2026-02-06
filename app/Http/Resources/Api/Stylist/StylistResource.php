@@ -14,6 +14,12 @@ class StylistResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'image' => $this->image,
+            'avg_rating' => $this->avg_rating,
+            'bio' => $this->bio,
+            'price' => $this->pricd,
+        ];
     }
 }
