@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->string('image')->nullable();
             $table->string('login_from')->nullable();
             $table->string('social_token')->nullable();
+            $table->boolean('is_block')->default(false);
 
             $table->string('otp')->nullable();
             $table->timestamp('otp_verified_at')->nullable();
