@@ -7,11 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class StylistImage extends Model
 {
+    protected $fillable = [
+        'stylist_id',
+        'path',
+    ];
+
     public function path(): Attribute
     {
         return Attribute::make(
             get: fn($value) => $value
-                ? asset($value)
+                ? asset('storage/' . $value)
                 : "https://ui-avatars.com/api/?name=" . $this->stylist?->name
         );
     }
