@@ -21,7 +21,7 @@
                                 <option value="50">50</option>
                             </select>
                         </div>
-                        <button class="btn btn-primary" wire:click="create">Add New Review</button>
+
                     </div>
                 </div>
             </div>

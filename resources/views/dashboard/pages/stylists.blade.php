@@ -1,5 +1,5 @@
 @extends('dashboard.layouts.app')
 
 @section('content')
-    <livewire:dashboard.stylists />
+    @livewire('dashboard.stylists')
 @endsection

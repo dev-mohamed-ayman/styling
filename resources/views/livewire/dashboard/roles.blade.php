@@ -33,23 +33,18 @@
                     <thead class="border-bottom">
                     <tr>
                         <th>#</th>
-                        <th>Name</th>
-                        <th>Guard</th>
-                        <th>Permissions</th>
-                        <th>Actions</th>
+                        <th>@lang('Name')</th>
+                        <th>@lang('Guard')</th>
+                        <th>@lang('Permissions')</th>
+                        <th>@lang('Actions')</th>
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($roles as $role)
+                    @forelse($roles as $role)
                         <tr>
                             <td>{{ $role->id }}</td>
-                            <td>
-                                <span class="badge bg-label-primary">{{ $role->name }}</span>
-                                @if(in_array($role->name, ['Super Admin']))
-                                    <span class="badge bg-label-danger">System</span>
-                                @endif
-                            </td>
-                            <td>{{ $role->guard_name }}</td>
+                            <td>{{ $role->name }}</td>
+                            <td><span class="badge bg-label-info">{{ $role->guard_name }}</span></td>
                             <td>
                                 <span class="badge bg-label-info">{{ $role->permissions->count() }} permissions</span>
                             </td>
@@ -70,14 +65,18 @@
                                     @can('delete roles')
                                         <button class="btn btn-sm btn-danger" wire:click="delete({{ $role->id }})"
                                                 onclick="confirm('Are you sure you want to delete this role?') || event.stopImmediatePropagation()"
-                                                @if(in_array($role->name, ['Super Admin', 'Admin', 'User'])) disabled @endif>
+                                                @if(in_array($role->name, ['Super Admin', 'Admin', 'Moderator'])) disabled @endif>
                                             <i class="icon-base ti tabler-trash"></i>
                                         </button>
                                     @endcan
                                 </div>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center">@lang('No roles found')</td>
+                        </tr>
+                    @endforelse
                     </tbody>
                 </table>
             </div>
@@ -86,7 +85,7 @@
         <div class="card-footer">{{ $roles->links() }}</div>
     </div>
 
-    <!-- Role Modal -->
+    <!-- Modal -->
     @if($is_open)
         <div class="modal fade show" style="display: block;" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -100,18 +99,18 @@
                     <form wire:submit.prevent="{{ $role_id ? 'update' : 'store' }}">
                         <div class="modal-body">
                             <div class="mb-3">
-                                <label for="name" class="form-label">Role Name <span class="text-danger">*</span></label>
+                                <label for="name" class="form-label">@lang('Name') <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="name" wire:model="name"
-                                       placeholder="Enter role name">
+                                       placeholder="@lang('Enter role name')">
                                 @error('name')
                                 <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
                             <div class="mb-3">
-                                <label for="guard_name" class="form-label">Guard <span class="text-danger">*</span></label>
-                                <select id="guard_name" class="form-select" wire:model="guard_name">
-                                    <option value="admin">Admin</option>
-                                    <option value="web">Web</option>
+                                <label for="guard_name" class="form-label">@lang('Guard Name') <span class="text-danger">*</span></label>
+                                <select class="form-control" id="guard_name" wire:model="guard_name">
+                                    <option value="admin">@lang('Admin')</option>
+                                    <option value="web">@lang('Web')</option>
                                 </select>
                                 @error('guard_name')
                                 <span class="text-danger">{{ $message }}</span>
@@ -119,7 +118,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" wire:click="closeModal">Close</button>
+                            <button type="button" class="btn btn-secondary" wire:click="closeModal">@lang('Close')</button>
                             <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
                                 <span wire:loading wire:target="{{ $role_id ? 'update' : 'store' }}" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
                                 {{ $role_id ? __('Update') : __('Save') }}
@@ -139,38 +138,57 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="permissionModalLabel">
-                            {{ __('Manage Permissions for') }}: {{ $name }}
+                            @lang('Manage Permissions for'): {{ $role_id ? \Spatie\Permission\Models\Role::find($role_id)->name : '' }}
                         </h5>
                         <button type="button" class="btn-close" wire:click="closePermissionModal" aria-label="Close"></button>
                     </div>
                     <form wire:submit.prevent="updatePermissions">
-                        <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
-                            @foreach($permissions as $group => $groupPermissions)
-                                <div class="mb-4">
-                                    <h6 class="text-capitalize fw-bold border-bottom pb-2">{{ $group }}</h6>
-                                    <div class="row">
-                                        @foreach($groupPermissions as $permission)
-                                            <div class="col-md-4 mb-2">
-                                                <div class="form-check">
-                                                    <input type="checkbox" class="form-check-input"
-                                                           id="permission_{{ $permission->id }}"
-                                                           value="{{ $permission->id }}"
-                                                           wire:model="selected_permissions">
-                                                    <label class="form-check-label" for="permission_{{ $permission->id }}">
-                                                        {{ ucfirst(str_replace(['_', $group], ['', ''], $permission->name)) }}
-                                                    </label>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label class="form-label">@lang('Select Permissions')</label>
+                                        <div class="row">
+                                            @php
+                                                $permissionsGrouped = \Spatie\Permission\Models\Permission::where('guard_name', 'admin')
+                                                    ->orderBy('name')
+                                                    ->get()
+                                                    ->groupBy(function ($permission) {
+                                                        $parts = explode(' ', $permission->name);
+                                                        return end($parts);
+                                                    });
+                                            @endphp
+                                            
+                                            @foreach($permissionsGrouped as $resource => $permissions)
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h6 class="mb-0 text-capitalize">{{ $resource }}</h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            @foreach($permissions as $permission)
+                                                                <div class="form-check mb-2">
+                                                                    <input type="checkbox" class="form-check-input" id="perm_{{ $permission->id }}" 
+                                                                           wire:model="selected_permissions" value="{{ $permission->id }}">
+                                                                    <label class="form-check-label text-capitalize" for="perm_{{ $permission->id }}">
+                                                                        {{ str_replace(' '.$resource, '', $permission->name) }} {{ $resource }}
+                                                                    </label>
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        @endforeach
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </div>
-                            @endforeach
+                            </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" wire:click="closePermissionModal">Close</button>
+                            <button type="button" class="btn btn-secondary" wire:click="closePermissionModal">@lang('Close')</button>
                             <button type="submit" class="btn btn-success" wire:loading.attr="disabled">
                                 <span wire:loading wire:target="updatePermissions" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                                {{ __('Update Permissions') }}
+                                @lang('Update Permissions')
                             </button>
                         </div>
                     </form>
@@ -179,4 +197,170 @@
         </div>
         <div class="modal-backdrop fade show"></div>
     @endif
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>

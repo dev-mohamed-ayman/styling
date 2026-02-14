@@ -38,8 +38,6 @@ class Stylist extends Model
         return $this->belongsToMany(FashionStyle::class, 'stylist_fashion_style');
     }
 
-
-
     public function images()
     {
         return $this->hasMany(StylistImage::class);
@@ -53,5 +51,10 @@ class Stylist extends Model
     public function reviews()
     {
         return $this->hasMany(StylistReview::class);
+    }
+
+    public function features()
+    {
+        return $this->hasMany(StylistFeature::class);
     }
 }

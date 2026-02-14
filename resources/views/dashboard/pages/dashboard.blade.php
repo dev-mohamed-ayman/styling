@@ -98,7 +98,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-sm-6">
+                        <div class="col-md-4">
                             <a href="{{ route('dashboard.users.index') }}" class="quick-action-card d-flex align-items-center p-3 rounded bg-label-primary">
                                 <div class="flex-shrink-0">
                                     <i class="ti ti-user-plus ti-xl text-primary"></i>
@@ -109,7 +109,7 @@
                                 </div>
                             </a>
                         </div>
-                        <div class="col-sm-6">
+                        <div class="col-md-4">
                             <a href="{{ route('dashboard.stylists.index') }}" class="quick-action-card d-flex align-items-center p-3 rounded bg-label-success">
                                 <div class="flex-shrink-0">
                                     <i class="ti ti-scissors ti-xl text-success"></i>
@@ -120,9 +120,9 @@
                                 </div>
                             </a>
                         </div>
-                        <div class="col-sm-6">
+                        <div class="col-md-4">
                             <a href="{{ route('dashboard.banners.index') }}" class="quick-action-card d-flex align-items-center p-3 rounded bg-label-info">
-                                <div class="flex-shrink-0">
+                                <div class="flex-grow-0">
                                     <i class="ti ti-photo ti-xl text-info"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
@@ -131,9 +131,10 @@
                                 </div>
                             </a>
                         </div>
-                        <div class="col-sm-6">
+                        @if(auth('admin')->user()->can('view roles') || auth('admin')->user()->can('view permissions'))
+                        <div class="col-md-4">
                             <a href="{{ route('dashboard.roles.index') }}" class="quick-action-card d-flex align-items-center p-3 rounded bg-label-warning">
-                                <div class="flex-shrink-0">
+                                <div class="flex-grow-0">
                                     <i class="ti ti-lock ti-xl text-warning"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
@@ -142,6 +143,8 @@
                                 </div>
                             </a>
                         </div>
+                        @endif
+
                     </div>
                 </div>
             </div>

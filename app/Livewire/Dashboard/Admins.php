@@ -32,6 +32,10 @@ class Admins extends Component
 
     public $is_active = true;
 
+    public $role = 'admin';
+
+    public $is_super_admin = false;
+
     protected function rules()
     {
         $rules = [
@@ -40,6 +44,8 @@ class Admins extends Component
             'username' => 'required|string|max:255|unique:admins,username,'.$this->admin_id,
             'password' => $this->admin_id ? 'nullable|min:6' : 'required|min:6',
             'is_active' => 'boolean',
+            'role' => 'sometimes|in:admin,moderator',
+            'is_super_admin' => 'boolean',
         ];
 
         return $rules;
@@ -76,6 +82,8 @@ class Admins extends Component
         $this->username = '';
         $this->password = '';
         $this->is_active = true;
+        $this->role = 'admin';
+        $this->is_super_admin = false;
     }
 
     public function create()
@@ -91,6 +99,8 @@ class Admins extends Component
         $this->email = $admin->email;
         $this->username = $admin->username;
         $this->is_active = $admin->is_active;
+        $this->role = $admin->role;
+        $this->is_super_admin = $admin->is_super_admin;
         $this->password = '';
         $this->is_open = true;
     }
@@ -98,16 +108,32 @@ class Admins extends Component
     public function store()
     {
         $this->validate();
-
+        
+        $currentUser = auth('admin')->user();
+        
+        // Only super admins can create admins with specific roles
+        if (!$currentUser->hasRole('Super Admin') && ($this->role !== 'admin' || $this->is_super_admin)) {
+            $this->dispatch('toast', ['type' => 'error', 'message' => __('Only Super Admins can assign roles.')]);
+            return;
+        }
+        
         $data = [
             'name' => $this->name,
             'email' => $this->email,
             'username' => $this->username,
             'is_active' => $this->is_active,
+            'role' => $this->role,
+            'is_super_admin' => $this->is_super_admin,
         ];
 
         if ($this->password) {
             $data['password'] = Hash::make($this->password);
+        }
+        
+        // Set default role if not super admin
+        if (!$currentUser->hasRole('Super Admin')) {
+            $data['role'] = 'admin';
+            $data['is_super_admin'] = false;
         }
 
         $admin = AdminModel::create($data);
@@ -119,9 +145,22 @@ class Admins extends Component
     public function update()
     {
         $this->validate();
-
+        
         $admin = AdminModel::findOrFail($this->admin_id);
-
+        $currentUser = auth('admin')->user();
+        
+        // Prevent non-super admins from modifying super admins
+        if (!$currentUser->hasRole('Super Admin') && $admin->hasRole('Super Admin')) {
+            $this->dispatch('toast', ['type' => 'error', 'message' => __('Only Super Admins can modify Super Admin accounts.')]);
+            return;
+        }
+        
+        // Prevent non-super admins from changing roles
+        if (!$currentUser->hasRole('Super Admin') && ($this->role !== $admin->role || $this->is_super_admin !== $admin->is_super_admin)) {
+            $this->dispatch('toast', ['type' => 'error', 'message' => __('Only Super Admins can assign roles.')]);
+            return;
+        }
+        
         $data = [
             'name' => $this->name,
             'email' => $this->email,
@@ -131,6 +170,18 @@ class Admins extends Component
 
         if ($this->password) {
             $data['password'] = Hash::make($this->password);
+        }
+        
+        // Only super admins can update role and is_super_admin fields
+        if ($currentUser->hasRole('Super Admin')) {
+            $data['role'] = $this->role;
+            $data['is_super_admin'] = $this->is_super_admin;
+            
+            // Prevent non-super admin from demoting themselves
+            if ($admin->id == $currentUser->id && !$this->is_super_admin) {
+                $this->dispatch('toast', ['type' => 'error', 'message' => __('You cannot remove Super Admin status from yourself.')]);
+                return;
+            }
         }
 
         $admin->update($data);

@@ -57,11 +57,10 @@ class Roles extends Component
         $this->resetInput();
     }
 
-    public function openPermissionModal($id)
+    public function openPermissionModal($roleId)
     {
-        $role = Role::findOrFail($id);
-        $this->role_id = $id;
-        $this->name = $role->name;
+        $this->role_id = $roleId;
+        $role = Role::find($roleId);
         $this->selected_permissions = $role->permissions->pluck('id')->toArray();
         $this->is_permission_modal_open = true;
     }
@@ -69,7 +68,8 @@ class Roles extends Component
     public function closePermissionModal()
     {
         $this->is_permission_modal_open = false;
-        $this->resetInput();
+        $this->role_id = null;
+        $this->selected_permissions = [];
     }
 
     private function resetInput()
@@ -88,13 +88,6 @@ class Roles extends Component
     public function edit($id)
     {
         $role = Role::findOrFail($id);
-
-        // Prevent editing system roles
-        if (in_array($role->name, ['Super Admin'])) {
-            $this->dispatch('toast', ['type' => 'error', 'message' => __('Cannot edit system roles')]);
-            return;
-        }
-
         $this->role_id = $id;
         $this->name = $role->name;
         $this->guard_name = $role->guard_name;
@@ -105,13 +98,13 @@ class Roles extends Component
     {
         $this->validate();
 
-        $role = Role::create([
+        Role::create([
             'name' => $this->name,
             'guard_name' => $this->guard_name,
         ]);
 
         $this->closeModal();
-        $this->dispatch('toast', ['type' => 'success', 'message' => __('Create Role: :name', ['name' => $role->name])]);
+        $this->dispatch('toast', ['type' => 'success', 'message' => __('Role created successfully')]);
     }
 
     public function update()
@@ -119,75 +112,51 @@ class Roles extends Component
         $this->validate();
 
         $role = Role::findOrFail($this->role_id);
-
-        // Prevent editing system roles
-        if (in_array($role->name, ['Super Admin'])) {
-            $this->dispatch('toast', ['type' => 'error', 'message' => __('Cannot edit system roles')]);
-            return;
-        }
-
         $role->update([
             'name' => $this->name,
             'guard_name' => $this->guard_name,
         ]);
 
         $this->closeModal();
-        $this->dispatch('toast', ['type' => 'success', 'message' => __('Edit Role: :name', ['name' => $role->name])]);
+        $this->dispatch('toast', ['type' => 'success', 'message' => __('Role updated successfully')]);
     }
 
     public function updatePermissions()
     {
         $role = Role::findOrFail($this->role_id);
-
-        // Prevent modifying system roles permissions directly
-        if (in_array($role->name, ['Super Admin'])) {
-            $this->dispatch('toast', ['type' => 'error', 'message' => __('Cannot modify Super Admin permissions')]);
-            return;
-        }
-
-        $permissions = Permission::whereIn('id', $this->selected_permissions)->get();
-        $role->syncPermissions($permissions);
+        $role->syncPermissions($this->selected_permissions);
 
         $this->closePermissionModal();
-        $this->dispatch('toast', ['type' => 'success', 'message' => __('Update Role Permissions: :name', ['name' => $role->name])]);
+        $this->dispatch('toast', ['type' => 'success', 'message' => __('Role permissions updated successfully')]);
     }
 
     public function delete($id)
     {
         $role = Role::findOrFail($id);
 
-        // Prevent deleting system roles
-        if (in_array($role->name, ['Super Admin', 'Admin', 'User'])) {
+        // Prevent deletion of system roles
+        if (in_array($role->name, ['Super Admin', 'Admin', 'Moderator'])) {
             $this->dispatch('toast', ['type' => 'error', 'message' => __('Cannot delete system roles')]);
             return;
         }
 
-        $name = $role->name;
         $role->delete();
 
-        $this->dispatch('toast', ['type' => 'success', 'message' => __('Delete Role: :name', ['name' => $name])]);
+        $this->dispatch('toast', ['type' => 'success', 'message' => __('Role deleted successfully')]);
     }
 
     public function render()
     {
-        $roles = Role::with('permissions')
+        $roles = Role::query()
+            ->where('guard_name', 'admin')
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', '%'.$this->search.'%');
             })
-            ->orderBy('name')
+            ->latest()
             ->paginate($this->per_page);
-
-        $permissions = Permission::where('guard_name', 'admin')
-            ->orderBy('name')
-            ->get()
-            ->groupBy(function ($permission) {
-                $parts = explode(' ', $permission->name);
-                return end($parts);
-            });
 
         return view('livewire.dashboard.roles', [
             'roles' => $roles,
-            'permissions' => $permissions,
         ]);
     }
 }

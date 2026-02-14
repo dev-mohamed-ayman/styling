@@ -58,39 +58,45 @@ class AdminRoles extends Component
             return;
         }
 
-        // Prevent removing Super Admin role from the last Super Admin
-        $currentRoles = $admin->roles->pluck('name')->toArray();
-        $newRoles = Role::whereIn('id', $this->selected_roles)->pluck('name')->toArray();
-
-        if (in_array('Super Admin', $currentRoles) && !in_array('Super Admin', $newRoles)) {
-            $superAdminCount = Admin::role('Super Admin')->count();
-            if ($superAdminCount <= 1) {
-                $this->dispatch('toast', ['type' => 'error', 'message' => __('Cannot remove Super Admin role from the last Super Admin')]);
-                return;
-            }
-        }
-
         $roles = Role::whereIn('id', $this->selected_roles)->get();
         $admin->syncRoles($roles);
 
         $this->closeModal();
-        $this->dispatch('toast', ['type' => 'success', 'message' => __('Roles updated successfully')]);
+        $this->dispatch('toast', ['type' => 'success', 'message' => __('Admin roles updated successfully')]);
+    }
+
+    public function removeRole($adminId, $roleId)
+    {
+        $admin = Admin::findOrFail($adminId);
+        $role = Role::findOrFail($roleId);
+        
+        // Prevent removing all roles from self
+        if ($admin->id === auth('admin')->id()) {
+            $currentRoles = $admin->roles->pluck('id')->toArray();
+            if (count($currentRoles) <= 1) {
+                $this->dispatch('toast', ['type' => 'error', 'message' => __('You cannot remove all roles from yourself')]);
+                return;
+            }
+        }
+        
+        $admin->removeRole($role);
+        
+        $this->dispatch('toast', ['type' => 'success', 'message' => __('Role removed from admin successfully')]);
     }
 
     public function render()
     {
-        $admins = Admin::with('roles')
+        $admins = Admin::query()
             ->when($this->search, function ($query) {
                 $query->where('name', 'like', '%'.$this->search.'%')
-                    ->orWhere('email', 'like', '%'.$this->search.'%')
-                    ->orWhere('username', 'like', '%'.$this->search.'%');
+                    ->orWhere('email', 'like', '%'.$this->search.'%');
             })
             ->latest()
             ->paginate($this->per_page);
 
-        $roles = Role::where('guard_name', 'admin')->orderBy('name')->get();
+        $roles = Role::where('guard_name', 'admin')->get();
 
-        return view('livewire.dashboard.admin_roles', [
+        return view('livewire.dashboard.admin-roles', [
             'admins' => $admins,
             'roles' => $roles,
         ]);

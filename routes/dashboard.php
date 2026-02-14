@@ -3,10 +3,7 @@
 use App\Http\Controllers\Dashboard\BannerController;
 use App\Http\Controllers\Dashboard\FashionStyleController;
 use App\Http\Controllers\Dashboard\StylistController;
-use App\Http\Controllers\Dashboard\StylistFeaturesController;
-use App\Http\Controllers\Dashboard\StylistImagesController;
 use App\Http\Controllers\Dashboard\StylistReviewsController;
-use App\Http\Controllers\Dashboard\StylistServicesController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Dashboard\AdminController;
 use App\Http\Controllers\Dashboard\RoleController;
@@ -34,23 +31,24 @@ Route::middleware('auth:admin')->group(function () {
     });
 
     // User Routes
-    Route::resource('users', UserController::class);
+    Route::resource('users', UserController::class)->middleware('permission:view users');
 
-   Route::resource('fashion_styles', FashionStyleController::class);
-    Route::resource('banners', BannerController::class);
-    Route::resource('stylists', StylistController::class);
-    Route::resource('stylist_features', StylistFeaturesController::class);
-    Route::resource('stylist_images', StylistImagesController::class);
-    Route::resource('stylist_services', StylistServicesController::class);
-    Route::resource('stylist_reviews', StylistReviewsController::class);
-    Route::resource('admins', AdminController::class);
+    Route::resource('fashion_styles', FashionStyleController::class)->middleware('permission:view fashion_styles');
+    Route::resource('banners', BannerController::class)->middleware('permission:view banners');
+
+    // Stylists - All in one CRUD (features, images, services are managed within)
+    Route::resource('stylists', StylistController::class)->middleware('permission:view stylists');
+
+    // Reviews remain separate (optional - can also be managed within stylists)
+    Route::resource('stylist_reviews', StylistReviewsController::class)->middleware('permission:view stylist_reviews');
+
+    Route::resource('admins', AdminController::class)->middleware('permission:view admins');
 
     // Roles & Permissions Routes
     Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
     Route::get('admin_roles', [RoleController::class, 'adminRoles'])->name('admin_roles.index');
     Route::get('permissions', [PermissionController::class, 'index'])->name('permissions.index');
 
-    // Notifications Routes
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');

@@ -13,11 +13,23 @@ class Admin extends Authenticatable
     // Spatie Permission trait
     use \Spatie\Permission\Traits\HasRoles;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'is_active',
+    ];
+
     protected $hidden = [
         'password',
         'is_active',
     ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
+
     protected $appends = ['image'];
 
     // Accessors

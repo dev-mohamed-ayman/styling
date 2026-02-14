@@ -6,7 +6,6 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use App\Models\Admin;
-use App\Models\User;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
@@ -31,7 +30,6 @@ class RolesAndPermissionsSeeder extends Seeder
         $permissions = [
             // Dashboard Permissions
             ['name' => 'view dashboard', 'guard_name' => 'admin'],
-            ['name' => 'view dashboard', 'guard_name' => 'web'],
 
             // User Management Permissions
             ['name' => 'view users', 'guard_name' => 'admin'],
@@ -46,69 +44,72 @@ class RolesAndPermissionsSeeder extends Seeder
             ['name' => 'edit admins', 'guard_name' => 'admin'],
             ['name' => 'delete admins', 'guard_name' => 'admin'],
 
-            // Role & Permission Management
-            ['name' => 'view roles', 'guard_name' => 'admin'],
-            ['name' => 'create roles', 'guard_name' => 'admin'],
-            ['name' => 'edit roles', 'guard_name' => 'admin'],
-            ['name' => 'delete roles', 'guard_name' => 'admin'],
-            ['name' => 'view permissions', 'guard_name' => 'admin'],
-            ['name' => 'assign permissions', 'guard_name' => 'admin'],
-            ['name' => 'assign roles', 'guard_name' => 'admin'],
-
-            // Fashion Styles Permissions
+            // Fashion Style Management Permissions
             ['name' => 'view fashion_styles', 'guard_name' => 'admin'],
             ['name' => 'create fashion_styles', 'guard_name' => 'admin'],
             ['name' => 'edit fashion_styles', 'guard_name' => 'admin'],
             ['name' => 'delete fashion_styles', 'guard_name' => 'admin'],
 
-            // Banners Permissions
+            // Banner Management Permissions
             ['name' => 'view banners', 'guard_name' => 'admin'],
             ['name' => 'create banners', 'guard_name' => 'admin'],
             ['name' => 'edit banners', 'guard_name' => 'admin'],
             ['name' => 'delete banners', 'guard_name' => 'admin'],
 
-            // Stylists Permissions
+            // Stylist Management Permissions
             ['name' => 'view stylists', 'guard_name' => 'admin'],
             ['name' => 'create stylists', 'guard_name' => 'admin'],
             ['name' => 'edit stylists', 'guard_name' => 'admin'],
             ['name' => 'delete stylists', 'guard_name' => 'admin'],
 
-            // Stylist Features Permissions
+            // Stylist Features Management Permissions
             ['name' => 'view stylist_features', 'guard_name' => 'admin'],
             ['name' => 'create stylist_features', 'guard_name' => 'admin'],
             ['name' => 'edit stylist_features', 'guard_name' => 'admin'],
             ['name' => 'delete stylist_features', 'guard_name' => 'admin'],
 
-            // Stylist Images Permissions
+            // Stylist Images Management Permissions
             ['name' => 'view stylist_images', 'guard_name' => 'admin'],
             ['name' => 'create stylist_images', 'guard_name' => 'admin'],
             ['name' => 'edit stylist_images', 'guard_name' => 'admin'],
             ['name' => 'delete stylist_images', 'guard_name' => 'admin'],
 
-            // Stylist Services Permissions
+            // Stylist Services Management Permissions
             ['name' => 'view stylist_services', 'guard_name' => 'admin'],
             ['name' => 'create stylist_services', 'guard_name' => 'admin'],
             ['name' => 'edit stylist_services', 'guard_name' => 'admin'],
             ['name' => 'delete stylist_services', 'guard_name' => 'admin'],
 
-            // Stylist Reviews Permissions
+            // Stylist Reviews Management Permissions
             ['name' => 'view stylist_reviews', 'guard_name' => 'admin'],
             ['name' => 'create stylist_reviews', 'guard_name' => 'admin'],
             ['name' => 'edit stylist_reviews', 'guard_name' => 'admin'],
             ['name' => 'delete stylist_reviews', 'guard_name' => 'admin'],
+
+            // Role & Permission Management Permissions
+            ['name' => 'view roles', 'guard_name' => 'admin'],
+            ['name' => 'create roles', 'guard_name' => 'admin'],
+            ['name' => 'edit roles', 'guard_name' => 'admin'],
+            ['name' => 'delete roles', 'guard_name' => 'admin'],
+            ['name' => 'assign roles', 'guard_name' => 'admin'],
+            ['name' => 'view permissions', 'guard_name' => 'admin'],
+            ['name' => 'assign permissions', 'guard_name' => 'admin'],
         ];
 
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate($permission);
+            Permission::firstOrCreate([
+                'name' => $permission['name'],
+                'guard_name' => $permission['guard_name']
+            ], $permission);
         }
 
         // ============================================
-        // Create Roles and Assign Permissions
+        // Create Roles & Assign Permissions
         // ============================================
 
         // Super Admin - Has all permissions
         $superAdminRole = Role::firstOrCreate(['name' => 'Super Admin', 'guard_name' => 'admin']);
-        $superAdminRole->syncPermissions(Permission::where('guard_name', 'admin')->get());
+        $superAdminRole->givePermissionTo(Permission::all());
 
         // Admin - Has most permissions except admin management
         $adminRole = Role::firstOrCreate(['name' => 'Admin', 'guard_name' => 'admin']);
@@ -124,37 +125,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'view stylist_reviews', 'create stylist_reviews', 'edit stylist_reviews', 'delete stylist_reviews',
         ]);
 
-        // Manager - Can view and edit but not delete
-        $managerRole = Role::firstOrCreate(['name' => 'Manager', 'guard_name' => 'admin']);
-        $managerRole->syncPermissions([
-            'view dashboard',
-            'view users', 'create users', 'edit users', 'block users',
-            'view fashion_styles', 'create fashion_styles', 'edit fashion_styles',
-            'view banners', 'create banners', 'edit banners',
-            'view stylists', 'create stylists', 'edit stylists',
-            'view stylist_features', 'create stylist_features', 'edit stylist_features',
-            'view stylist_images', 'create stylist_images', 'edit stylist_images',
-            'view stylist_services', 'create stylist_services', 'edit stylist_services',
-            'view stylist_reviews', 'create stylist_reviews', 'edit stylist_reviews',
-        ]);
-
-        // Editor - Can only view and edit content
-        $editorRole = Role::firstOrCreate(['name' => 'Editor', 'guard_name' => 'admin']);
-        $editorRole->syncPermissions([
-            'view dashboard',
-            'view users', 'edit users',
-            'view fashion_styles', 'edit fashion_styles',
-            'view banners', 'edit banners',
-            'view stylists', 'edit stylists',
-            'view stylist_features', 'edit stylist_features',
-            'view stylist_images', 'edit stylist_images',
-            'view stylist_services', 'edit stylist_services',
-            'view stylist_reviews', 'edit stylist_reviews',
-        ]);
-
-        // Viewer - Read-only access
-        $viewerRole = Role::firstOrCreate(['name' => 'Viewer', 'guard_name' => 'admin']);
-        $viewerRole->syncPermissions([
+        // Moderator - Read-only access
+        $moderatorRole = Role::firstOrCreate(['name' => 'Moderator', 'guard_name' => 'admin']);
+        $moderatorRole->syncPermissions([
             'view dashboard',
             'view users',
             'view fashion_styles',
@@ -165,22 +138,6 @@ class RolesAndPermissionsSeeder extends Seeder
             'view stylist_services',
             'view stylist_reviews',
         ]);
-
-        // ============================================
-        // Web/User Roles (for frontend)
-        // ============================================
-
-        // Regular User
-        $userRole = Role::firstOrCreate(['name' => 'User', 'guard_name' => 'web']);
-        $userRole->syncPermissions(['view dashboard']);
-
-        // Premium User
-        $premiumRole = Role::firstOrCreate(['name' => 'Premium User', 'guard_name' => 'web']);
-        $premiumRole->syncPermissions(['view dashboard']);
-
-        // Stylist Role (for frontend)
-        $stylistRole = Role::firstOrCreate(['name' => 'Stylist', 'guard_name' => 'web']);
-        $stylistRole->syncPermissions(['view dashboard']);
 
         // ============================================
         // Assign Super Admin role to default admin

@@ -66,7 +66,6 @@ class Permissions extends Component
     public function edit($id)
     {
         $permission = Permission::findOrFail($id);
-
         $this->permission_id = $id;
         $this->name = $permission->name;
         $this->guard_name = $permission->guard_name;
@@ -77,13 +76,13 @@ class Permissions extends Component
     {
         $this->validate();
 
-        $permission = Permission::create([
+        Permission::create([
             'name' => $this->name,
             'guard_name' => $this->guard_name,
         ]);
 
         $this->closeModal();
-        $this->dispatch('toast', ['type' => 'success', 'message' => __('Create Permission: :name', ['name' => $permission->name])]);
+        $this->dispatch('toast', ['type' => 'success', 'message' => __('Permission created successfully')]);
     }
 
     public function update()
@@ -97,31 +96,26 @@ class Permissions extends Component
         ]);
 
         $this->closeModal();
-        $this->dispatch('toast', ['type' => 'success', 'message' => __('Edit Permission: :name', ['name' => $permission->name])]);
+        $this->dispatch('toast', ['type' => 'success', 'message' => __('Permission updated successfully')]);
     }
 
     public function delete($id)
     {
         $permission = Permission::findOrFail($id);
 
-        // Prevent deleting critical permissions
-        if (in_array($permission->name, ['view dashboard'])) {
-            $this->dispatch('toast', ['type' => 'error', 'message' => __('Cannot delete critical permissions')]);
-            return;
-        }
-
-        $name = $permission->name;
         $permission->delete();
 
-        $this->dispatch('toast', ['type' => 'success', 'message' => __('Delete Permission: :name', ['name' => $name])]);
+        $this->dispatch('toast', ['type' => 'success', 'message' => __('Permission deleted successfully')]);
     }
 
     public function render()
     {
-        $permissions = Permission::when($this->search, function ($query) {
-            $query->where('name', 'like', '%'.$this->search.'%');
-        })
-            ->orderBy('name')
+        $permissions = Permission::query()
+            ->where('guard_name', 'admin')
+            ->when($this->search, function ($query) {
+                $query->where('name', 'like', '%'.$this->search.'%');
+            })
+            ->latest()
             ->paginate($this->per_page);
 
         return view('livewire.dashboard.permissions', [

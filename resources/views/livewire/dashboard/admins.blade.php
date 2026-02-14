@@ -35,6 +35,7 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Username</th>
+                        <th>Role</th>
                         <th>Active</th>
                         <th>Actions</th>
                     </tr>
@@ -49,6 +50,13 @@
                             <td>{{ $admin->name }}</td>
                             <td>{{ $admin->email }}</td>
                             <td>{{ $admin->username }}</td>
+                            <td>
+                                @if($admin->is_super_admin)
+                                    <span class="badge bg-label-danger">Super Admin</span>
+                                @else
+                                    <span class="badge bg-label-info">{{ ucfirst($admin->role) }}</span>
+                                @endif
+                            </td>
                             <td>
                                 <label class="switch switch-primary">
                                     <input type="checkbox" class="switch-input"
@@ -147,6 +155,27 @@
                                 <span class="text-danger">{{ $message }}</span>
                                 @enderror
                             </div>
+                            
+                            @if(auth('admin')->user()->hasRole('Super Admin'))
+                            <div class="mb-3">
+                                <label for="role" class="form-label">Role</label>
+                                <select class="form-control" id="role" wire:model="role">
+                                    <option value="admin">Admin</option>
+                                    <option value="moderator">Moderator</option>
+                                </select>
+                                @error('role')
+                                <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="is_super_admin" wire:model="is_super_admin">
+                                <label class="form-check-label" for="is_super_admin">Super Admin</label>
+                            </div>
+                            @error('is_super_admin')
+                            <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                            @endif
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" wire:click="closeModal">Close</button>

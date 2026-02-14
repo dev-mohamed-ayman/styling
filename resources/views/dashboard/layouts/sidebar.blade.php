@@ -39,7 +39,7 @@
                 $isSuperAdmin = \DB::table('model_has_roles')
                     ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
                     ->where('model_has_roles.model_id', $admin->id)
-                    ->where('model_has_roles.model_type', 'App\Models\Admin')
+                    ->where('model_has_roles.model_type', 'App\\Models\\Admin')
                     ->where('roles.name', 'Super Admin')
                     ->exists();
             }
@@ -64,11 +64,11 @@
         </li>
         @endif
 
-        @if($isSuperAdmin || auth('admin')->user()->canany(['view roles', 'view permissions', 'assign roles']))
+        @if($isSuperAdmin || auth('admin')->user()->can('view roles') || auth('admin')->user()->can('view permissions') || auth('admin')->user()->can('assign roles'))
         <li class="menu-item {{ isActiveRoute(['dashboard.roles.*', 'dashboard.admin_roles.*', 'dashboard.permissions.*']) }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-lock"></i>
-                <div data-i18n="@lang('Permissions')">@lang('Permissions')</div>
+                <div data-i18n="@lang('Roles & Permissions')">@lang('Roles & Permissions')</div>
             </a>
             <ul class="menu-sub">
                 @if($isSuperAdmin || auth('admin')->user()->can('view roles'))
@@ -85,16 +85,12 @@
                     </a>
                 </li>
                 @endif
-                @if($isSuperAdmin || auth('admin')->user()->can('assign roles'))
-                <li class="menu-item {{ isActiveRoute('dashboard.admin_roles.*') }}">
-                    <a href="{{ route('dashboard.admin_roles.index') }}" class="menu-link">
-                        <div data-i18n="@lang('Assign Roles')">@lang('Assign Roles')</div>
-                    </a>
-                </li>
-                @endif
+
             </ul>
         </li>
         @endif
+
+
 
         @if($isSuperAdmin || auth('admin')->user()->can('view fashion_styles'))
         <li class="menu-item {{ isActiveRoute('dashboard.fashion_styles.*') }}">
@@ -123,32 +119,32 @@
         </li>
         @endif
 
-        @if($isSuperAdmin || auth('admin')->user()->can('view stylist_features'))
-        <li class="menu-item {{ isActiveRoute('dashboard.stylist_features.*') }}">
-            <a href="{{ route('dashboard.stylist_features.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-star"></i>
-                <div data-i18n="@lang('Stylist_features')">@lang('Stylist_features')</div>
-            </a>
-        </li>
-        @endif
+{{--        @if($isSuperAdmin || auth('admin')->user()->can('view stylist_features'))--}}
+{{--        <li class="menu-item {{ isActiveRoute('dashboard.stylist_features.*') }}">--}}
+{{--            <a href="{{ route('dashboard.stylist_features.index') }}" class="menu-link">--}}
+{{--                <i class="menu-icon icon-base ti tabler-star"></i>--}}
+{{--                <div data-i18n="@lang('Stylist_features')">@lang('Stylist_features')</div>--}}
+{{--            </a>--}}
+{{--        </li>--}}
+{{--        @endif--}}
 
-        @if($isSuperAdmin || auth('admin')->user()->can('view stylist_images'))
-        <li class="menu-item {{ isActiveRoute('dashboard.stylist_images.*') }}">
-            <a href="{{ route('dashboard.stylist_images.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-photo-plus"></i>
-                <div data-i18n="@lang('Stylist_images')">@lang('Stylist_images')</div>
-            </a>
-        </li>
-        @endif
+{{--        @if($isSuperAdmin || auth('admin')->user()->can('view stylist_images'))--}}
+{{--        <li class="menu-item {{ isActiveRoute('dashboard.stylist_images.*') }}">--}}
+{{--            <a href="{{ route('dashboard.stylist_images.index') }}" class="menu-link">--}}
+{{--                <i class="menu-icon icon-base ti tabler-photo-plus"></i>--}}
+{{--                <div data-i18n="@lang('Stylist_images')">@lang('Stylist_images')</div>--}}
+{{--            </a>--}}
+{{--        </li>--}}
+{{--        @endif--}}
 
-        @if($isSuperAdmin || auth('admin')->user()->can('view stylist_services'))
-        <li class="menu-item {{ isActiveRoute('dashboard.stylist_services.*') }}">
-            <a href="{{ route('dashboard.stylist_services.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-scissors"></i>
-                <div data-i18n="@lang('Stylist_services')">@lang('Stylist_services')</div>
-            </a>
-        </li>
-        @endif
+{{--        @if($isSuperAdmin || auth('admin')->user()->can('view stylist_services'))--}}
+{{--        <li class="menu-item {{ isActiveRoute('dashboard.stylist_services.*') }}">--}}
+{{--            <a href="{{ route('dashboard.stylist_services.index') }}" class="menu-link">--}}
+{{--                <i class="menu-icon icon-base ti tabler-scissors"></i>--}}
+{{--                <div data-i18n="@lang('Stylist_services')">@lang('Stylist_services')</div>--}}
+{{--            </a>--}}
+{{--        </li>--}}
+{{--        @endif--}}
 
         @if($isSuperAdmin || auth('admin')->user()->can('view stylist_reviews'))
         <li class="menu-item {{ isActiveRoute('dashboard.stylist_reviews.*') }}">
